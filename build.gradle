@@ -17,7 +17,7 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 
-version = '0.1'
+version = '0.1.1'
 group = 'zone.rong.fluidizedtanks' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'fluidizedtanks'
 

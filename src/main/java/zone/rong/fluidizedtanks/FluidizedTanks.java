@@ -7,10 +7,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -19,6 +22,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import zone.rong.fluidizedtanks.block.TankBlock;
 import zone.rong.fluidizedtanks.block.TankBlockEntity;
 import zone.rong.fluidizedtanks.block.item.TankBlockItem;
+import zone.rong.fluidizedtanks.client.TankBlockColor;
 import zone.rong.fluidizedtanks.client.TankBlockEntityRenderer;
 import zone.rong.fluidizedtanks.data.S2CUpdateTankDefinitionsPacket;
 import zone.rong.fluidizedtanks.data.TankDefinitionManager;
@@ -39,9 +43,11 @@ public class FluidizedTanks {
         bus.addGenericListener(BlockEntityType.class, this::registerBlockEntity);
         bus.addGenericListener(Item.class, this::registerItem);
 
-        bus.addListener(this::setupClient);
-        bus.addListener(this::registerBlockColour);
-        bus.addListener(this::registerItemColour);
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            bus.addListener(this::setupClient);
+            bus.addListener(this::registerBlockColour);
+            bus.addListener(this::registerItemColour);
+        });
 
         // MinecraftForge.EVENT_BUS.addListener(TankDefinitionManager::listenAddReload);
         MinecraftForge.EVENT_BUS.addListener(TankDefinitionManager::listenOnDatapackSync);
@@ -69,17 +75,20 @@ public class FluidizedTanks {
         event.getRegistry().register(tankItem);
     }
 
+    @OnlyIn(Dist.CLIENT)
     private void setupClient(final FMLClientSetupEvent event) {
         ItemBlockRenderTypes.setRenderLayer(TANK, RenderType.cutout());
         BlockEntityRenderers.register(ENTITY_TYPE, ctx -> new TankBlockEntityRenderer());
     }
 
+    @OnlyIn(Dist.CLIENT)
     private void registerBlockColour(final ColorHandlerEvent.Block event) {
-        event.getBlockColors().register(TANK, TANK);
+        event.getBlockColors().register(new TankBlockColor(), TANK);
     }
 
+    @OnlyIn(Dist.CLIENT)
     private void registerItemColour(final ColorHandlerEvent.Item event) {
-        event.getItemColors().register(TANK, TANK);
+        event.getItemColors().register(new TankBlockColor(), TANK);
     }
 
 }
